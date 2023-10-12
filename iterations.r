@@ -40,6 +40,7 @@ stations_metadata_df <-
   stations_metadata %>% 
   transform_metadata_to_df(.)
 
+stations_metadata_df
 
 #### 3: Testing metadata
 source("functions/data_tests.r")
@@ -47,10 +48,14 @@ test_stations_metadata(stations_metadata_df)
 
 
 ### 5: Final volume query: 
-
 source("gql-queries/vol_qry.r")
 
 stations_metadata_df %>% 
+  filter(latestData > Sys.Date() - days(7)) %>% 
+  sample_n(1) -> selected_station
+
+
+selected_station %>% 
   filter(latestData > Sys.Date() - days(7)) %>% 
   sample_n(1) %$% 
   vol_qry(
@@ -62,6 +67,7 @@ stations_metadata_df %>%
   transform_volumes() %>% 
   ggplot(aes(x=from, y=volume)) + 
   geom_line() + 
+  labs(title = paste("Traffic Volume for:", selected_station$name)) +
   theme_classic()
 
 
